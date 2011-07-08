@@ -26,11 +26,11 @@ company "meganalysis" {
 start syntax S_Companies = S_Company+ companies;
 
 syntax S_Company
-	= "company" S_StringLiteral name "{" S_Department* departments "}"
+	= @Foldable "company" S_StringLiteral name "{" S_Department* departments "}"
 	;
 
 syntax S_Department
-	= "department" S_StringLiteral name "{" S_DepartmentElement* elements "}"
+	= @Foldable "department" S_StringLiteral name "{" S_DepartmentElement* elements "}"
 	;
 	
 syntax S_DepartmentElement
@@ -40,11 +40,11 @@ syntax S_DepartmentElement
 	;
 
 syntax S_Manager
-	= "manager" S_StringLiteral name "{" S_EmployeeProperty* properties "}"
+	= @Foldable "manager" S_StringLiteral name "{" S_EmployeeProperty* properties "}"
 	;
 	
 syntax S_Employee
-	= "employee" S_StringLiteral name "{" S_EmployeeProperty* properties "}"
+	= @Foldable "employee" S_StringLiteral name "{" S_EmployeeProperty* properties "}"
 	; 
 
 syntax S_EmployeeProperty

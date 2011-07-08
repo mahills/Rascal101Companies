@@ -8,6 +8,10 @@ company "meganalysis" {
       address "Utrecht"
       salary 12345
     }
+    employee "Ray" {
+      address "Redmond"
+      salary 234567
+    }
   }
   department "Development" {
     manager "Ray" {

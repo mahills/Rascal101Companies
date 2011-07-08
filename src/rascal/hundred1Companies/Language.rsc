@@ -12,9 +12,15 @@ import ParseTree;
 import util::IDE;
 
 import rascal::hundred1Companies::Grammar;
+import rascal::hundred1Companies::AST;
+import rascal::hundred1Companies::BuildAST;
+import rascal::hundred1Companies::Check;
 
 public void register101() {
   	registerLanguage("101Companies", "hc", Tree (str x, loc l) {
-    	return parse(#Grammar::S_Companies, x, l);
+    	return parse(#S_Companies, x, l);
   	});
+  	
+  	registerAnnotator("101Companies", checkCompanies);
 }   
+
