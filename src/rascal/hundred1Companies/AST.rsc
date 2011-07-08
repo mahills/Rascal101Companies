@@ -1,9 +1,31 @@
 module rascal::hundred1Companies::AST
 
-data Company = company(str name, set[Department] departments);
+anno loc Company@at;
+anno loc Department@at;
+anno loc Employee@at;
+anno loc EmployeeProperty@at;
 
-data Department = department(str name, Manager manager, set[Department] subDepartments, set[Employee] employees);
+data Companies 
+	= companies(list[Company] comps)
+	;
 
-data Employee = employee(str name, str address, int salary); 
+data Company 
+	= company(str name, list[Department] deps)
+	;
 
-data Manager = manager(Employee employee);
+data Department 
+	= department(str name, list[Department] deps, list[Employee] empls)
+	;
+
+data Employee 
+	= employee(str name, list[EmployeeProperty] props)
+	;
+
+data Employee 
+	= manager(Employee emp)
+	;
+
+data EmployeeProperty 
+	= intProp(str name, int intVal)
+	| strProp(str name, str strVal)
+	;
