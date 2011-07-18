@@ -7,13 +7,13 @@ import rascal::hundred1Companies::Grammar;
 import rascal::hundred1Companies::AST;
 
 public Companies buildAST(S_Companies sc) {
-	rascal::hundred1Companies::AST::Company toAST(rascal::hundred1Companies::Grammar::S_Company c) {
+	Company toAST(S_Company c) {
 		if (`company <S_StringLiteral name> { <S_Department* departments> }` := c)
 			return company("<name>", [ toAST(d) | d <- departments ])[@at=c@\loc];
 		throw "Unrecognized S_Company syntax: <sc>";
 	}
 	
-	rascal::hundred1Companies::AST::Department toAST(rascal::hundred1Companies::Grammar::S_Department d) {
+	Department toAST(S_Department d) {
 		if (`department <S_StringLiteral name> { <S_DepartmentElement* elements> }` := d) {
 			list[Department] dl = [ ];
 			list[Employee] el = [ ];
@@ -30,19 +30,19 @@ public Companies buildAST(S_Companies sc) {
 		throw "Unrecognized S_Department syntax: <d>";
 	}
 	
-	rascal::hundred1Companies::AST::Employee toAST(rascal::hundred1Companies::Grammar::S_Manager m) {
+	Employee toAST(S_Manager m) {
 		if (`manager <S_StringLiteral name> { <S_EmployeeProperty* properties> }` := m)
 			return manager(employee("<name>", [ toAST(p) | p <- properties ]))[@at=m@\loc];
 		throw "Unrecognized S_Manager syntax: <m>";
 	}
 	
-	rascal::hundred1Companies::AST::Employee toAST(rascal::hundred1Companies::Grammar::S_Employee e) {
+	Employee toAST(S_Employee e) {
 		if (`employee <S_StringLiteral name> { <S_EmployeeProperty* properties> }` := e)
 			return employee("<name>", [ toAST(p) | p <- properties ])[@at=e@\loc];	
 		throw "Unrecognized S_Employee syntax: <e>";
 	}
 	
-	rascal::hundred1Companies::AST::EmployeeProperty toAST(rascal::hundred1Companies::Grammar::S_EmployeeProperty ep) {
+	EmployeeProperty toAST(S_EmployeeProperty ep) {
 		if (`<S_Identifier name> <S_Literal val>` := ep) {
 			switch(val) {
 				case (S_Literal)`<S_StringLiteral slit>` : return strProp("<name>", "<slit>")[@at=ep@\loc];
@@ -53,5 +53,5 @@ public Companies buildAST(S_Companies sc) {
 		throw "Unrecognized S_EmployeeProperty syntax: <ep>";
 	}
 	
-	return rascal::hundred1Companies::AST::companies([ toAST(c) | c <- sc.companies ]);
+	return companies([ toAST(c) | c <- sc.companies ]);
 }

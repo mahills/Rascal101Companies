@@ -44,7 +44,7 @@ public set[Message] verify(Companies cs) {
 	// Check 6: Each employee (within a company) has a unique name
 	empNames = { < c, e.name, e, e@at > | c <- cs.comps, / e:employee(_,_) <- c, (e@at)? };
 	for (c <- cs.comps, ename <- empNames[c]<0>, size(empNames[c,ename]) > 1)
-		errors = errors + { error(e@at, "Employee name occurs more than once in the same company") | e <- empNames[c,empName]<0> };
+		errors = errors + { error(e@at, "Employee name occurs more than once in the same company") | e <- empNames[c,ename]<0> };
 		
 	// Check 7: Additional properties: salary and possibly others
 	// TODO: Add check here...
