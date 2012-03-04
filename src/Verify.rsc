@@ -1,10 +1,19 @@
-module rascal::hundred1Companies::Verify
+@license{
+  Copyright (c) 2009-2011 CWI
+  All rights reserved. This program and the accompanying materials
+  are made available under the terms of the Eclipse Public License v1.0
+  which accompanies this distribution, and is available at
+  http://www.eclipse.org/legal/epl-v10.html
+}
+@contributor{Bas Basten - Bas.Basten@cwi.nl (CWI)}
+@contributor{Mark Hills - Mark.Hills@cwi.nl (CWI)}
+module Verify
 
 import List;
 import Set;
+import String;
 import Message;
-
-import rascal::hundred1Companies::AST;
+import AST;
 
 /*
 From http://101companies.org/index.php/101feature:Company
@@ -55,10 +64,12 @@ public set[Message] verify(Companies cs) {
 public set[Message] uniqueCompanyNames(Companies cs) {
 	set[Message] errors = { };
 	set[str] cNames = { };
-	for (c <- cs.comps) {
-		if (c.name in cNames)
-			errors = errors + error("Duplicate company name", c@at);
-		cNames += c.name;
+	top-down visit(cs) {
+		case c:company(n,_) :
+			if (trim(n) in cNames)
+				errors = errors + error("Duplicate company name", c@at);
+			else
+				cNames += trim(n);
 	}
 	return errors;
 }
@@ -67,19 +78,17 @@ public set[Message] uniqueCompanyNames(Companies cs) {
 public set[Message] uniqueDepartmentNames(Company c) {
 	set[Message] errors = { };
 	set[str] dNames = { };
-	for (/Department d <- c) {
-		// NOTE: The check to ensure that a name is given is part of the
-		// final check, here we just ensure a name is given to make
-		// sure we don't give confusing error messages about multiple
-		// departments named ""
-		if (d.name != "", d.name in dNames)
-			errors = errors + error("Duplicate department name", d@at);
-		dNames += d.name;
+	top-down visit(c) {
+		case d:department(n,_,_) :
+			if (size(trim(n)) > 0, trim(n) in dNames)
+				errors = errors + error("Duplicate department name", d@at);
+			else
+				dNames += trim(n);
 	}
 	return errors; 
 }
 
-@doc{Check the condition that each department has a unique name within a company}
+@doc{Check the condition that each department has exactly one manager}
 public set[Message] departmentHasOneManager(Department d) {
 	set[Message] errors = { };
 	managers = [ m | m:manager(_) <- d.empls ];
@@ -96,7 +105,7 @@ public set[Message] departmentHasOneManager(Department d) {
 public set[Message] employeeHasName(Employee e) {
 	set[Message] errors = { };
 	if (manager(em) := e) return employeeHasName(em);
-	if (e.name == "")
+	if (size(trim(e.name)) == 0)
 		errors = errors + error("Employee must have a name", e@at);
 	return errors; 
 }
@@ -105,9 +114,9 @@ public set[Message] employeeHasName(Employee e) {
 public set[Message] employeeHasInfo(Employee e) {
 	set[Message] errors = { };
 	if (manager(em) := e) return employeeHasInfo(em);
-	if ([_*,intProp("salary",_),_*] !:= e.props)
+	if (! ([_*,intProp("salary",_),_*] := e.props))
 		errors = errors + error("Employee properties must include salary", e@at);
-	if ([_*,strProp("address",_),_*] !:= e.props)
+	if (! ([_*,strProp("address",_),_*] := e.props))
 		errors = errors + error("Employee properties must include address", e@at);
 	return errors; 
 }
@@ -117,13 +126,15 @@ public set[Message] employeeOccursOnce(Companies cs) {
 	set[str] seenBefore = { };
 	set[Message] errors = { };
 	
-	for (/e:employee(n,_) := cs) {
-		if (n in seenBefore) {
-			errors = errors + error("Employee may only appear in one position in one company", e@at);
-		} else {
-			seenBefore += n;
-		}
-	} 
+	top-down visit(cs) {
+		case e:employee(n,_) :
+			if (n in seenBefore) {
+				errors = errors + error("Employee may only appear in one position in one company", e@at);
+			} else {
+				seenBefore += n;
+			}
+	}
+	 
 	return errors; 
 }
 
@@ -131,19 +142,32 @@ public set[Message] employeeOccursOnce(Companies cs) {
 public set[Message] propertiesNotNull(Companies cs) {
 	set[Message] errors = { };
 	
-	for (c:company("",_) <- cs.comps)
-		errors = errors + error("Company name may not be null", c@at);
+	top-down visit(cs) {
+		case c:company(n,_) :
+			if (size(trim(n)) == 0)
+				errors = errors + error("Company name may not be null", c@at);
 		
-	for (/d:department("",_,_) := cs)
-		errors = errors + error("Department name may not be null", d@at);
+		case d:department(n,_,_) :
+			if (size(trim(n)) == 0)
+				errors = errors + error("Department name may not be null", d@at);
 		
-	// NOTE: The following is handled by the employeeHasName check, and
-	// so is commented out here to prevent a duplicate error message.
-	//for (/e:employee("",_) := cs)
-	//	errors = errors + error("Employee name may not be null", e@at);
+		// NOTE: The following is handled by the employeeHasName check, and
+		// so is commented out here to prevent a duplicate error message.
+		//case e:employee(n,_) :
+		//	if (size(trim(n)) == 0)
+		//		errors = errors + error("Employee name may not be null", e@at);
 
-	for (/EmployeeProperty ep := cs, ep.name == "")
-		errors = errors + error("Property name may not be null", ep@at);	
+		case intProp(n,_) :
+			if (size(trim(n)) == 0)
+				errors = errors + error("Property name may not be null", ep@at);	
+
+		case strProp(n,m) : {
+			if (size(trim(n)) == 0)
+				errors = errors + error("Property name may not be null", ep@at);	
+			if (size(trim(m)) == 0)
+				errors = errors + error("Property value may not be null", ep@at);
+		}	
+	}
 	
 	return errors;
 }

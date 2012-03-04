@@ -1,15 +1,25 @@
-module rascal::hundred1Companies::BuildAST
+@license{
+  Copyright (c) 2009-2011 CWI
+  All rights reserved. This program and the accompanying materials
+  are made available under the terms of the Eclipse Public License v1.0
+  which accompanies this distribution, and is available at
+  http://www.eclipse.org/legal/epl-v10.html
+}
+@contributor{Bas Basten - Bas.Basten@cwi.nl (CWI)}
+@contributor{Mark Hills - Mark.Hills@cwi.nl (CWI)}
+module BuildAST
 
 import String;
 import ParseTree;
-
-import rascal::hundred1Companies::Grammar;
-import rascal::hundred1Companies::AST;
+import Grammar;
+import AST;
 
 public Companies buildAST(S_Companies sc) {
+	str toASTString(str inString) = substring(substring(inString,0,size(inString)-1),1);
+	
 	Company toAST(S_Company c) {
 		if (`company <S_StringLiteral name> { <S_Department* departments> }` := c)
-			return company("<name>", [ toAST(d) | d <- departments ])[@at=c@\loc];
+			return company(toASTString("<name>"), [ toAST(d) | d <- departments ])[@at=c@\loc];
 		throw "Unrecognized S_Company syntax: <sc>";
 	}
 	
@@ -25,27 +35,27 @@ public Companies buildAST(S_Companies sc) {
 					default : throw "Unrecognized S_DepartmentElement syntax: <e>";
 				}	
 			}
-			return department("<name>", dl, el)[@at=d@\loc];
+			return department(toASTString("<name>"), dl, el)[@at=d@\loc];
 		}
 		throw "Unrecognized S_Department syntax: <d>";
 	}
 	
 	Employee toAST(S_Manager m) {
 		if (`manager <S_StringLiteral name> { <S_EmployeeProperty* properties> }` := m)
-			return manager(employee("<name>", [ toAST(p) | p <- properties ]))[@at=m@\loc];
+			return manager(employee(toASTString("<name>"), [ toAST(p) | p <- properties ])[@at=m@\loc])[@at=m@\loc];
 		throw "Unrecognized S_Manager syntax: <m>";
 	}
 	
 	Employee toAST(S_Employee e) {
 		if (`employee <S_StringLiteral name> { <S_EmployeeProperty* properties> }` := e)
-			return employee("<name>", [ toAST(p) | p <- properties ])[@at=e@\loc];	
+			return employee(toASTString("<name>"), [ toAST(p) | p <- properties ])[@at=e@\loc];	
 		throw "Unrecognized S_Employee syntax: <e>";
 	}
 	
 	EmployeeProperty toAST(S_EmployeeProperty ep) {
 		if (`<S_Identifier name> <S_Literal val>` := ep) {
 			switch(val) {
-				case (S_Literal)`<S_StringLiteral slit>` : return strProp("<name>", "<slit>")[@at=ep@\loc];
+				case (S_Literal)`<S_StringLiteral slit>` : return strProp("<name>", toASTString("<slit>"))[@at=ep@\loc];
 				case (S_Literal)`<S_IntegerLiteral ilit>` : return intProp("<name>", toInt("<ilit>"))[@at=ep@\loc];
 				default : throw "Unrecognized S_Literal syntax: <val>"; 
 			}

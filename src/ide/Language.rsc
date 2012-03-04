@@ -5,16 +5,17 @@
   which accompanies this distribution, and is available at
   http://www.eclipse.org/legal/epl-v10.html
 }
+@contributor{Bas Basten - Bas.Basten@cwi.nl (CWI)}
 @contributor{Mark Hills - Mark.Hills@cwi.nl (CWI)}
-module rascal::hundred1Companies::Language
+module ide::Language
 
 import ParseTree;
 import util::IDE;
 
-import rascal::hundred1Companies::Grammar;
-import rascal::hundred1Companies::AST;
-import rascal::hundred1Companies::BuildAST;
-import rascal::hundred1Companies::Check;
+import Grammar;
+import AST;
+import BuildAST;
+import Check;
 
 public void register101() {
   	registerLanguage("101Companies", "hc", Tree (str x, loc l) {

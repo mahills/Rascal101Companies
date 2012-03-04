@@ -5,10 +5,11 @@
   which accompanies this distribution, and is available at
   http://www.eclipse.org/legal/epl-v10.html
 }
+@contributor{Bas Basten - Bas.Basten@cwi.nl (CWI)}
 @contributor{Mark Hills - Mark.Hills@cwi.nl (CWI)}
 module Plugin
 
-import rascal::hundred1Companies::Language;
+import ide::Language;
 import util::IDE;
 
 public void main() {
