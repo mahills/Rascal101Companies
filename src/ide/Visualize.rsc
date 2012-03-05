@@ -21,7 +21,7 @@ private str getId(employee(str n,_)) = "e_" + n;
 
 private Figure getBox(Company c:company(str n,_)) = box(text(n), vis::Figure::id(getId(c)), fillColor("red"));
 private Figure getBox(Department d:department(str n, _, _)) = box(text(n), vis::Figure::id(getId(d)), fillColor("orange"));
-private Figure getBox(Employee e:manager(employee(str n, _))) = box(text(n), vis::Figure::id(getId(m)), fillColor("yellow"), size(getSalary(e) / 1000));
+private Figure getBox(Employee m:manager(employee(str n, _))) = box(text(n), vis::Figure::id(getId(m)), fillColor("yellow"), size(getSalary(m) / 1000));
 private Figure getBox(Employee e:employee(str n,_)) = box(text(n), vis::Figure::id(getId(e)), fillColor("white"), size(getSalary(e) / 1000));
 
 private int getSalary(manager(Employee e)) = getSalary(e);
@@ -44,20 +44,36 @@ private Edge getEdge(str from, str to) {
 	return [ getEdge(dep, n) | employee(n,_,_) <- emps ];
 }*/
 
-public Figure toTree(Company c) {
-	_nodes = [getBox(c)] + [
-			[getBox(d), getBox(mngr)] + [ getBox(e) | e <- emps] 
-		| /d:department(_,mngr,_,emps) <- c ];
+//public Figure toTree(Company c) {
+//	_nodes = [getBox(c)] + [
+//			[getBox(d), getBox(mngr)] + [ getBox(e) | e <- emps] 
+//		| /d:department(_,mngr,_,emps) <- c ];
+//	
+//	_edges = [ getEdge(getId(d), getId(d.manager))							// dep -> manager
+//				+ [ getEdge(getId(d), getId(sd)) | sd <- d.deps ] // dep -> subdepartments
+//				+ [ getEdge(getId(d), getId(e)) | e <- d.empls ]		// dep -> employees
+//			 | /d:department(_,_,_,_) <- c ]
+//	       + [ getEdge(getId(c), getId(d)) | d <- c.deps ];			// company -> departments
+//	
+//    return tree(_nodes, _edges, /*hint("layered"),*/ hint("layered"), size(400), gap(20));
+//}
+
+public Figure company2Tree(Company c) {
+	Figure toTree(Company c) {
+		return tree(getBox(c),[toTree(d) | d <- c.deps], gap(20));
+	}
 	
-	_edges = [ getEdge(getId(d), getId(d.manager))							// dep -> manager
-				+ [ getEdge(getId(d), getId(sd)) | sd <- d.deps ] // dep -> subdepartments
-				+ [ getEdge(getId(d), getId(e)) | e <- d.empls ]		// dep -> employees
-			 | /d:department(_,_,_,_) <- c ]
-	       + [ getEdge(getId(c), getId(d)) | d <- c.deps ];			// company -> departments
+	Figure toTree(Department d) {
+		return tree(getBox(d),[toTree(dsub) | dsub <- d.deps] + [toTree(e) | e <- d.empls], gap(20));
+	}
 	
-    return tree(_nodes, _edges, /*hint("layered"),*/ hint("layered"), size(400), gap(20));
+	Figure toTree(Employee e) {
+		return getBox(e);
+	}
+	
+	return toTree(c);
 }
 
 public void render(Company c) {
-	render(toTree(c));
+	render(company2Tree(c));
 }
