@@ -18,6 +18,7 @@ import AST;
 import BuildAST;
 import Verify;
 import Message;
+import ide::Outline;
 
 public void register101() {
   	registerLanguage("101Companies", "hc", Tree (str x, loc l) {
@@ -31,7 +32,8 @@ public void register101() {
   				set[Message] msgs = verify(buildAST(pt));
   				return isEmpty(msgs) ? pt : pt[@messages = msgs];
   			}
-  		)
+  		),
+  		outliner(buildOutline)
   	});
 }
 
