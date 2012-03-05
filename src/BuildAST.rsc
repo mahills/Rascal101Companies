@@ -14,12 +14,14 @@ import ParseTree;
 import Grammar;
 import AST;
 
-public Companies buildAST(S_Companies sc) {
+public Companies buildAST(Tree pt) {
 	str toASTString(str inString) = substring(substring(inString,0,size(inString)-1),1);
 	
+	Companies toAST(S_Companies sc) = companies([ toAST(c) | c <- sc.companies ]);
+
 	Company toAST(S_Company c) {
 		if (`company <S_StringLiteral name> { <S_Department* departments> }` := c)
-			return company(toASTString("<name>"), [ toAST(d) | d <- departments ])[@at=c@\loc];
+			return company(toASTString("<name>"), [ toAST(d) | d <- departments ])[@at=c@\loc][@nameAt=name@\loc];
 		throw "Unrecognized S_Company syntax: <sc>";
 	}
 	
@@ -35,33 +37,36 @@ public Companies buildAST(S_Companies sc) {
 					default : throw "Unrecognized S_DepartmentElement syntax: <e>";
 				}	
 			}
-			return department(toASTString("<name>"), dl, el)[@at=d@\loc];
+			return department(toASTString("<name>"), dl, el)[@at=d@\loc][@nameAt=name@\loc];
 		}
 		throw "Unrecognized S_Department syntax: <d>";
 	}
 	
 	Employee toAST(S_Manager m) {
 		if (`manager <S_StringLiteral name> { <S_EmployeeProperty* properties> }` := m)
-			return manager(employee(toASTString("<name>"), [ toAST(p) | p <- properties ])[@at=m@\loc])[@at=m@\loc];
+			return manager(employee(toASTString("<name>"), [ toAST(p) | p <- properties ])[@at=m@\loc][@nameAt=name@\loc])[@at=m@\loc][@nameAt=name@\loc];
 		throw "Unrecognized S_Manager syntax: <m>";
 	}
 	
 	Employee toAST(S_Employee e) {
 		if (`employee <S_StringLiteral name> { <S_EmployeeProperty* properties> }` := e)
-			return employee(toASTString("<name>"), [ toAST(p) | p <- properties ])[@at=e@\loc];	
+			return employee(toASTString("<name>"), [ toAST(p) | p <- properties ])[@at=e@\loc][@nameAt=name@\loc];	
 		throw "Unrecognized S_Employee syntax: <e>";
 	}
 	
 	EmployeeProperty toAST(S_EmployeeProperty ep) {
 		if (`<S_Identifier name> <S_Literal val>` := ep) {
 			switch(val) {
-				case (S_Literal)`<S_StringLiteral slit>` : return strProp("<name>", toASTString("<slit>"))[@at=ep@\loc];
-				case (S_Literal)`<S_IntegerLiteral ilit>` : return intProp("<name>", toInt("<ilit>"))[@at=ep@\loc];
+				case (S_Literal)`<S_StringLiteral slit>` : return strProp("<name>", toASTString("<slit>"))[@at=ep@\loc][@nameAt=name@\loc][@valueAt=val@\loc];
+				case (S_Literal)`<S_IntegerLiteral ilit>` : return intProp("<name>", toInt("<ilit>"))[@at=ep@\loc][@nameAt=name@\loc][@valueAt=val@\loc];
 				default : throw "Unrecognized S_Literal syntax: <val>"; 
 			}
 		}
 		throw "Unrecognized S_EmployeeProperty syntax: <ep>";
 	}
 	
-	return companies([ toAST(c) | c <- sc.companies ]);
+	if (start[S_Companies] sc := pt, list[Tree] tl := sc[1])
+		return toAST(tl[1]);
+	else	
+		throw "Invalid model syntax: <pt>";
 }

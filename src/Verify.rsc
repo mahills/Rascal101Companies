@@ -32,6 +32,7 @@ Managers are employees, too.
 All properties (names, addresses, salaries) must be not null.
 
 */
+
 @doc{Verify a number of correctness conditions on the AST}
 public set[Message] verify(Companies cs) {
 	set[Message] errors = {};
@@ -66,8 +67,8 @@ public set[Message] uniqueCompanyNames(Companies cs) {
 	set[str] cNames = { };
 	top-down visit(cs) {
 		case c:company(n,_) :
-			if (trim(n) in cNames)
-				errors = errors + error("Duplicate company name", c@at);
+			if (size(trim(n)) > 0, trim(n) in cNames)
+				errors = errors + error("Duplicate company name", c@nameAt);
 			else
 				cNames += trim(n);
 	}
@@ -81,7 +82,7 @@ public set[Message] uniqueDepartmentNames(Company c) {
 	top-down visit(c) {
 		case d:department(n,_,_) :
 			if (size(trim(n)) > 0, trim(n) in dNames)
-				errors = errors + error("Duplicate department name", d@at);
+				errors = errors + error("Duplicate department name", d@nameAt);
 			else
 				dNames += trim(n);
 	}
@@ -106,7 +107,7 @@ public set[Message] employeeHasName(Employee e) {
 	set[Message] errors = { };
 	if (manager(em) := e) return employeeHasName(em);
 	if (size(trim(e.name)) == 0)
-		errors = errors + error("Employee must have a name", e@at);
+		errors = errors + error("Employee must have a name", e@nameAt);
 	return errors; 
 }
 
@@ -128,10 +129,10 @@ public set[Message] employeeOccursOnce(Companies cs) {
 	
 	top-down visit(cs) {
 		case e:employee(n,_) :
-			if (n in seenBefore) {
+			if (size(trim(n)) > 0, trim(n) in seenBefore) {
 				errors = errors + error("Employee may only appear in one position in one company", e@at);
 			} else {
-				seenBefore += n;
+				seenBefore += trim(n);
 			}
 	}
 	 
@@ -145,11 +146,11 @@ public set[Message] propertiesNotNull(Companies cs) {
 	top-down visit(cs) {
 		case c:company(n,_) :
 			if (size(trim(n)) == 0)
-				errors = errors + error("Company name may not be null", c@at);
+				errors = errors + error("Company name may not be null", c@nameAt);
 		
 		case d:department(n,_,_) :
 			if (size(trim(n)) == 0)
-				errors = errors + error("Department name may not be null", d@at);
+				errors = errors + error("Department name may not be null", d@nameAt);
 		
 		// NOTE: The following is handled by the employeeHasName check, and
 		// so is commented out here to prevent a duplicate error message.
@@ -157,15 +158,15 @@ public set[Message] propertiesNotNull(Companies cs) {
 		//	if (size(trim(n)) == 0)
 		//		errors = errors + error("Employee name may not be null", e@at);
 
-		case intProp(n,_) :
+		case ep:intProp(n,_) :
 			if (size(trim(n)) == 0)
-				errors = errors + error("Property name may not be null", ep@at);	
+				errors = errors + error("Property name may not be null", ep@nameAt);	
 
-		case strProp(n,m) : {
+		case ep:strProp(n,m) : {
 			if (size(trim(n)) == 0)
-				errors = errors + error("Property name may not be null", ep@at);	
+				errors = errors + error("Property name may not be null", ep@nameAt);	
 			if (size(trim(m)) == 0)
-				errors = errors + error("Property value may not be null", ep@at);
+				errors = errors + error("Property value may not be null", ep@valueAt);
 		}	
 	}
 	

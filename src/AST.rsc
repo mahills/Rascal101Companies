@@ -13,6 +13,11 @@ anno loc Company@at;
 anno loc Department@at;
 anno loc Employee@at;
 anno loc EmployeeProperty@at;
+anno loc Company@nameAt;
+anno loc Department@nameAt;
+anno loc Employee@nameAt;
+anno loc EmployeeProperty@nameAt;
+anno loc EmployeeProperty@valueAt;
 
 data Companies 
 	= companies(list[Company] comps)

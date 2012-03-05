@@ -1,5 +1,5 @@
 /*
-Verifier check: the duplicate company name should be flagged.
+Verifier check: employees must have salary and address info
 */
 company "meganalysis" {
   department "Research" {
@@ -11,9 +11,13 @@ company "meganalysis" {
       address "Utrecht"
       salary 12345
     }
+    employee "Bob" {
+      address "Utrecht"
+    }
+    employee "Frank" {
+      salary 12345
+    }
+    employee "George" {
+    }
   }
-}
-
-company "meganalysis" {
-
 }

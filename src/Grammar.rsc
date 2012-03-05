@@ -61,7 +61,7 @@ syntax S_EmployeeProperty
 	;
 	
 lexical S_Identifier
-	=  ([A-Z a-z _] !<< [A-Z _ a-z] [0-9 A-Z _ a-z]* !>> [0-9 A-Z _ a-z]) \ S_Keywords 
+	=  @category="Identifier" ([A-Z a-z _] !<< [A-Z _ a-z] [0-9 A-Z _ a-z]* !>> [0-9 A-Z _ a-z]) \ S_Keywords 
 	;
 
 keyword S_Keywords
@@ -84,8 +84,14 @@ lexical S_IntegerLiteral
 	= @category="Constant" [0-9]+ !>> [0-9]
 	;
 	
+lexical Comment
+	= @category="Comment" "/*" (![*] | [*] !>> [/])* "*/" 
+	| @category="Comment" "//" ![\n]* !>> [\ \t\r] $ // the restriction helps with parsing speed
+	;
+
 lexical Layout 
 	= [\t-\n\r\ ]
+	| Comment
 	;
 
 layout Layouts

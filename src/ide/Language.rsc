@@ -11,17 +11,27 @@ module ide::Language
 
 import ParseTree;
 import util::IDE;
-
+import util::SyntaxHighlightingTemplates;
+import Set;
 import Grammar;
 import AST;
 import BuildAST;
-import Check;
+import Verify;
+import Message;
 
 public void register101() {
   	registerLanguage("101Companies", "hc", Tree (str x, loc l) {
-    	return parse(#S_Companies, x, l);
+    	return parse(#start[S_Companies], x, l);
   	});
   	
-  	registerAnnotator("101Companies", checkCompanies);
-}   
+  	registerContributions("101Companies", {
+  		getSolarizedLightCategories(),
+  		annotator(
+  			Tree (Tree pt) {
+  				set[Message] msgs = verify(buildAST(pt));
+  				return isEmpty(msgs) ? pt : pt[@messages = msgs];
+  			}
+  		)
+  	});
+}
 

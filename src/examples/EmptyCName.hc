@@ -1,3 +1,6 @@
+/*
+Verifier check: the empty company name should be flagged.
+*/
 company "" {
   department "Research" {
     manager "Craig" {
